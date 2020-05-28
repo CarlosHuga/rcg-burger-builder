@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import axios from '../../../axios-orders'
 import { connect } from 'react-redux'
 
@@ -11,170 +11,173 @@ import Input from '../../../components/UI/Input/Input'
 import withErrorHandler from '../../../hoc/withErrorHandler/withErrorHandler'
 import { updateObject, checkValidity } from '../../../shared/utility'
 
-class ContactData extends Component {
+
+
+
+const contactData = (props) => {
     
-    state = {
-        formIsValid: false,
-        orderForm: {     
-            name: {
-                elementType: 'input',
-                elementConfig: {
-                    type: 'text',
-                    placeholder: 'Your Name'
-                },
-                value: '',
-                validation: {
-                    required: true
-                },
-                valid: false,
-                touched: false
+    const [formIsValid, setFormIsValid] = useState(false)
+    const [orderForm, setOrderForm] = useState({     
+        name: {
+            elementType: 'input',
+            elementConfig: {
+                type: 'text',
+                placeholder: 'Your Name'
+            },
+            value: '',
+            validation: {
+                required: true
+            },
+            valid: false,
+            touched: false
 
+        },
+        street: {
+            elementType: 'input',
+            elementConfig: {
+                type: 'text',
+                placeholder: 'Street'
             },
-            street: {
-                elementType: 'input',
-                elementConfig: {
-                    type: 'text',
-                    placeholder: 'Street'
-                },
-                value: '',
-                validation: {
-                    required: true
-                },
-                valid: false,
-                touched: false
+            value: '',
+            validation: {
+                required: true
+            },
+            valid: false,
+            touched: false
 
+        },
+        zipcode: {
+            elementType: 'input',
+            elementConfig: {
+                type: 'text',
+                placeholder: 'ZIP Code'
             },
-            zipcode: {
-                elementType: 'input',
-                elementConfig: {
-                    type: 'text',
-                    placeholder: 'ZIP Code'
-                },
-                value: '',
-                validation: {
-                    minLength: 5,
-                    maxLength: 5,
-                    required: true
-                },
-                valid: false,
-                touched: false
+            value: '',
+            validation: {
+                minLength: 5,
+                maxLength: 5,
+                required: true
             },
-            country: {
-                elementType: 'input',
-                elementConfig: {
-                    type: 'text',
-                    placeholder: 'Country'
-                },
-                value: '',
-                validation: {
-                    required: true
-                },
-                valid: false,
-                touched: false
-            },                
-            email: {
-                elementType: 'input',
-                elementConfig: {
-                    type: 'email',
-                    placeholder: 'Your E-Mail'
-                },
-                value: '',
-                validation: {
-                    required: true
-                },
-                valid: false,
-                touched: false
+            valid: false,
+            touched: false
+        },
+        country: {
+            elementType: 'input',
+            elementConfig: {
+                type: 'text',
+                placeholder: 'Country'
             },
-            deliveryMethod: {
-                elementType: 'select',
-                elementConfig: {
-                    options: [
-                        {value: 'fastest', displayValue: 'Fastest'},
-                        {value: 'cheapest', displayValue: 'Cheapest'}
-                    ]
-                },
-                value: 'fastest',
-                validation: {},
-                valid: true
-            }
+            value: '',
+            validation: {
+                required: true
+            },
+            valid: false,
+            touched: false
+        },                
+        email: {
+            elementType: 'input',
+            elementConfig: {
+                type: 'email',
+                placeholder: 'Your E-Mail'
+            },
+            value: '',
+            validation: {
+                required: true
+            },
+            valid: false,
+            touched: false
+        },
+        deliveryMethod: {
+            elementType: 'select',
+            elementConfig: {
+                options: [
+                    {value: 'fastest', displayValue: 'Fastest'},
+                    {value: 'cheapest', displayValue: 'Cheapest'}
+                ]
+            },
+            value: 'fastest',
+            validation: {},
+            valid: true
         }
-    }
+    })
+        
+    
 
-    orderHandler = (event) => {
+    const orderHandler = (event) => {
         event.preventDefault()
         const formData = {}
-        for (let k in this.state.orderForm){
-            formData[k] = this.state.orderForm[k].value
+        for (let k in orderForm){
+            formData[k] = orderForm[k].value
         }
         const order = {
             // Mosca con creer en lo que dice el cliente
             // web, es importante validar temas de plata
             // como el precio total en el servidor 
-            ingredients: this.props.ings,
-            price: this.props.total,
+            ingredients: props.ings,
+            price: props.total,
             orderData: formData,
-            userId: this.props.userId
+            userId: props.userId
            
         }
 
-        this.props.onOrderBurger(order,this.props.token)
+        props.onOrderBurger(order,props.token)
        
     }
 
-    inputChangedHandler = (event, inputIdentifier) => {
+    const inputChangedHandler = (event, inputIdentifier) => {
         //console.log(event.target.value)
-        const updatedFormElement = updateObject(this.state.orderForm[inputIdentifier], {
+        const updatedFormElement = updateObject(orderForm[inputIdentifier], {
             value: event.target.value,
-            valid: checkValidity(event.target.value, this.state.orderForm[inputIdentifier].validation),
+            valid: checkValidity(event.target.value, orderForm[inputIdentifier].validation),
             touched: true
         })
-        const updatedOrderForm = updateObject(this.state.orderForm,{[inputIdentifier] : updatedFormElement} )
+        const updatedOrderForm = updateObject(orderForm,{[inputIdentifier] : updatedFormElement} )
         
-        let formIsValid = true
+        let checkFormIsValid = true
         for (let inp in updatedOrderForm){
-            formIsValid = (updatedOrderForm[inp].valid) && formIsValid
+            checkFormIsValid = (updatedOrderForm[inp].valid) && checkFormIsValid
         }
 
-
-        this.setState({orderForm: updatedOrderForm, formIsValid: formIsValid}) 
+        setOrderForm(updatedOrderForm)
+        setFormIsValid(checkFormIsValid)
     }
 
    
-    render() {
-        const formElementsArray = []
-        for (let key in this.state.orderForm){
-            formElementsArray.push({
-                id: key,
-                config: this.state.orderForm[key]
-            })
-        }
-        let form = (
-            <form onSubmit={this.orderHandler}>
-                {formElementsArray.map(formE => {
-                    return <Input 
-                        invalid={!formE.config.valid}
-                        shouldValidate={formE.config.validation}
-                        touched={formE.config.touched}
-                        key={formE.id}
-                        elementType={formE.config.elementType}
-                        elementConfig={formE.config.elementConfig}
-                        value={formE.config.value}
-                        changed={(event) => this.inputChangedHandler(event, formE.id)}
-                    />
-                })}
-                <Button btnType="Success" disabled={!this.state.formIsValid}>ORDER</Button>
-            </form>
-        )
-        if (this.props.loading){
-            form = <Spinner/>
-        }
-        return (
-            <div className={classes.ContactData}>
-                <h4>Enter your Contact Data</h4>
-                {form}
-            </div>
-        );
+    
+    const formElementsArray = []
+    for (let key in orderForm){
+        formElementsArray.push({
+            id: key,
+            config: orderForm[key]
+        })
     }
+    let form = (
+        <form onSubmit={orderHandler}>
+            {formElementsArray.map(formE => {
+                return <Input 
+                    invalid={!formE.config.valid}
+                    shouldValidate={formE.config.validation}
+                    touched={formE.config.touched}
+                    key={formE.id}
+                    elementType={formE.config.elementType}
+                    elementConfig={formE.config.elementConfig}
+                    value={formE.config.value}
+                    changed={(event) => inputChangedHandler(event, formE.id)}
+                />
+            })}
+            <Button btnType="Success" disabled={!formIsValid}>ORDER</Button>
+        </form>
+    )
+    if (props.loading){
+        form = <Spinner/>
+    }
+    return (
+        <div className={classes.ContactData}>
+            <h4>Enter your Contact Data</h4>
+            {form}
+        </div>
+    )
+    
 }
 
 const mapStateToProps = (state) => {
@@ -193,4 +196,4 @@ const mapDispatchToProps = dispatch => {
     }
 }
 
-export default connect(mapStateToProps,mapDispatchToProps)(withErrorHandler(ContactData,axios));
+export default connect(mapStateToProps,mapDispatchToProps)(withErrorHandler(contactData,axios));

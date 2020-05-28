@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useEffect } from 'react';
 import axios from '../../axios-orders'
 import { connect } from 'react-redux'
 
@@ -9,34 +9,36 @@ import withErrorHandler from '../../hoc/withErrorHandler/withErrorHandler'
 import * as actions from '../../store/actions/index'
 import Spinner from '../../components/UI/Spinner/Spinner'
 
-class Orders extends Component {
+const orders = (props) => {
     
-    componentDidMount(){
-       this.props.onFetchOrders(this.props.token, this.props.userId)
-    }
+    const {onFetchOrders, token, userId} = props 
 
+    useEffect(() => {
+       onFetchOrders(token, userId) 
+    },[onFetchOrders, token, userId])
+    
+    
 
-    render() {
-        let orders = <Spinner/>
-        if (!this.props.loading){
-            if (this.props.orders){
-                orders = this.props.orders.map(el => {
-                    return <Order 
-                        key={el.id} 
-                        price={el.price} 
-                        ingredients={el.ingredients}
-                    /> 
-                }) 
-            } else {
-                orders = <p>No orders available</p>
-            }
+    let orders = <Spinner/>
+    if (!props.loading){
+        if (props.orders){
+            orders = props.orders.map(el => {
+                return <Order 
+                    key={el.id} 
+                    price={el.price} 
+                    ingredients={el.ingredients}
+                /> 
+            }) 
+        } else {
+            orders = <p>No orders available</p>
         }
-        return (
+    }
+    return (
             <div>
                 {orders}
             </div>
-        );
-    }
+    );
+    
 }
 
 const mapDispatchToProps = (dispatch) => {
@@ -54,4 +56,4 @@ const mapStateToProps = (state) => {
     }
 } 
 
-export default connect(mapStateToProps,mapDispatchToProps)(withErrorHandler(Orders, axios));
+export default connect(mapStateToProps,mapDispatchToProps)(withErrorHandler(orders, axios));
